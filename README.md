@@ -10,4 +10,8 @@ npm install
 # serve with hot reload at localhost:3000
 mongod
 npm run webpack
-npm run dev
+npm run build
+npm run start
+
+#If you modify some file run
+npm run webpack

@@ -27,8 +27,8 @@
                     <td v-bind:class="{finished: t.status}"> {{ t.tittle }} </td> 
                     <td> {{ t.status ? 'Finished'  : 'To complete'}} </td>
                     <td> 
-                        <a href="#" @click="t.status = !t.status"> ✓</a>
-                        <a href="#" @click="deleteTask(index)">X</a> 
+                        <button class="btn btn-primary" @click="updateTask(t._id,index)"> ✓</button>
+                        <button class="btn btn-danger"  @click="deleteTask(t._id)">X</button> 
                     </td>
                 </tr>
             </table>
@@ -59,36 +59,66 @@ export default {
     },
     methods: {
         addTask: function()
-        {
-            fetch('/api/tasks',
+        {   
+            if(this.task.tittle.trim() != '')
             {
-                method: 'POST',
-                body: JSON.stringify( this.task),
+                fetch('/api/tasks',
+                {
+                    method: 'POST',
+                    body: JSON.stringify( this.task),
+                    headers:{
+                        'Accept': 'application/json',
+                        'Content-type': 'application/json'
+                    }
+                }).then(res => res.json()).then( data => {
+                    console.log(data);
+                    this.getData();
+                    this.task = new Tasks();
+                });
+            }
+        },
+        deleteTask: function(id)
+        {
+            // this.Listtasks.splice(id,1);
+            fetch('/api/tasks/'+id,
+            {
+                method: 'DELETE',
                 headers:{
                     'Accept': 'application/json',
                     'Content-type': 'application/json'
                 }
-            }).then(res => res.json()).then( data => console.log(data));
-            
-            if(this.task.tittle.trim() != '')
+            }).then(res => res.json()).then( data => 
             {
-                this.Listtasks.push( 
-                    {
-                        tittle: this.task.tittle,
-                        status:false
-                    });
-                this.task = new Tasks();
-            }
+                console.log(data);
+                this.getData();
+            });
         },
-        deleteTask: function(index)
+        updateTask: function(id,index)
         {
-            this.Listtasks.splice(index,1);
+            var t = this.Listtasks[index];
+            t.status = !this.Listtasks[index].status;
+            
+            fetch('/api/tasks/'+id,
+            {
+                method: 'PUT',
+                body: JSON.stringify( t),
+                headers:{
+                    'Accept': 'application/json',
+                    'Content-type': 'application/json'
+                }
+            }).then(res => res.json()).then( data => {
+                console.log(data);
+                this.getData();
+            });
+        },
+        getData: function(){
+            fetch('/api/tasks').then(res => res.json().then(data=> {
+                this.Listtasks = data
+            }));  
         }
     },
     mounted: function(){
-        fetch('/api/tasks').then(res => res.json().then(data=> {
-            this.Listtasks = data
-        } ));  
+        this.getData();
     }
 }
 </script>
